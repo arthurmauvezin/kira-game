@@ -1,57 +1,41 @@
 import jwt
-from datetime import datetime, timedelta
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
-from starlette.status import HTTP_401_UNAUTHORIZED
 
+import crud
 from core.config import config
-from core.jwt import create_access_token
-from core.security import verify_password
-from models.token import TokenData
-from models.user import User, UserInDB, fake_users_db
+from db.database import get_default_db
+from models.token import TokenPayload
+from models.user import UserInDB
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=config['JWT']['TOKEN_PATH'])
-
-
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=config['JWT']['TOKEN_PATH'])
 
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+async def get_current_user(token: str = Security(reusable_oauth2)):
     try:
         payload = jwt.decode(token, config['JWT']['SECRET_KEY'], algorithms=[config['JWT']['ALGORITHM']])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenPayload(**payload)
     except PyJWTError:
-        raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
+        )
+    db = get_default_db()
+    user = crud.user.get(db, username=token_data.username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
-    if current_user.disabled:
+async def get_current_active_user(current_user: UserInDB = Security(get_current_user)):
+    if not crud.user.is_active(current_user):
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
+async def get_current_active_superuser(current_user: UserInDB = Security(get_current_user)):
+    if not crud.user.is_superuser(current_user):
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return current_user
