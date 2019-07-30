@@ -2,6 +2,7 @@ import jwt
 from fastapi import HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
+from starlette.status import HTTP_403_FORBIDDEN
 
 import crud
 from core.config import config
