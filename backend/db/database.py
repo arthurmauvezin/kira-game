@@ -1,9 +1,15 @@
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient
+from urllib.parse import quote_plus
 
 from core.config import config
 
-def get_default_db():
-    client = MongoClient('mongodb://'+config['MONGO']['USERNAME']+':'+config['MONGO']['PASSWORD']+'@'+config['MONGO']['SERVER']+':'+config['MONGO']['PORT']+'/')
-    db = client[config['MONGO']['DATABASE']]
 
+def get_default_db():
+    uri = "mongodb://%s:%s@%s" % (
+        quote_plus(config['MONGO']['USERNAME']), 
+        quote_plus(config['MONGO']['PASSWORD']), 
+        config['MONGO']['SERVER']
+    )
+    client = MongoClient(uri)
+    db = client[config['MONGO']['DATABASE']]
     return db

@@ -1,5 +1,8 @@
+email-validator
 fastapi
 passlib[bcrypt]
 pyjwt
 pymongo
+python-multipart
+requests
 uvicorn
