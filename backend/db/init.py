@@ -46,4 +46,3 @@ print(f"Collection names : {db.list_collection_names()}")
 for player in db.players.find():
     print(player)
 
-result = database.players.update_one({"_id": username}, { "$set" : {"hashed_password": get_password_hash(userIn.hashed_password)}} )

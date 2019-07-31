@@ -23,7 +23,10 @@ def send_email(email_to: str, subject: str, template: str, variables={}):
                 "template": template,
                 "h:X-Mailgun-Variables": json.dumps(variables) })
 
-    logging.info(f"send email result: {result.json()}")
+    if result.ok:
+        logging.info(f"Email successfully sent")
+    else: 
+        logging.error(f"Problem with sending email. Reason: {result.text} ")
 
 
 def send_test_email(email_to: str):
