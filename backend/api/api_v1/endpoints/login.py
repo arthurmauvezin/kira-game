@@ -10,6 +10,7 @@ from models.msg import Msg
 from models.token import Token
 from models.user import User, UserInDB, UserUpdate
 from utils import generate_password_reset_token, send_reset_password_email, verify_password_reset_token
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 import crud
 
@@ -25,15 +26,15 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     user = crud.user.authenticate(db, username=form_data.username, password=form_data.password)
 
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
     elif not crud.user.is_active(user):
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Inactive user")
 
     access_token_expires = timedelta(minutes=int(config['JWT']['ACCESS_TOKEN_EXPIRE_MINUTES']))
 
     return {
         "access_token": create_access_token(
-            data={"username": user.username}, expires_delta=access_token_expires
+            data={"sub": f"username:{user.username}"}, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
     }

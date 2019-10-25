@@ -6,5 +6,7 @@ class Token(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    username: str = None
+    sub: str = None
+    exp: int = None
+    iss: str = None
 
