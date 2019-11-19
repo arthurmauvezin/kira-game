@@ -1,14 +1,15 @@
 from fastapi import Depends, APIRouter, Security
-
 from api.utils.security import get_current_active_user, get_current_active_superuser
-from models.msg import Msg
+from models.room import Room
 from models.user import User
+from models.msg import Msg
+from typing import List
 
 router = APIRouter()
 
 
-@router.get("/me/", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
+@router.get("/", response_model=List[Room])
+async def get_all_rooms(current_user: User = Security(get_current_active_user)):
     return current_user
 
 

@@ -3,4 +3,3 @@ import os
 
 config = SafeConfigParser(os.environ)
 config.read('config.ini')
-

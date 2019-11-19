@@ -1,9 +1,9 @@
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from pymongo import MongoClient
 from urllib.parse import quote_plus
 import os
 
-config = SafeConfigParser(os.environ)
+config = ConfigParser(os.environ)
 config.read('config.ini')
 
 uri = "mongodb://%s:%s@%s" % (
@@ -69,4 +69,3 @@ result = db.players.insert_many(players_data)
 print(f"Collection names : {db.list_collection_names()}")
 for player in db.players.find():
     print(player)
-

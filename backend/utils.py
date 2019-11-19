@@ -1,12 +1,21 @@
-from typing import Optional
-from datetime import datetime, timedelta
-
 from core.config import config
+from datetime import datetime, timedelta
+from jwt.exceptions import InvalidTokenError
+from typing import Optional
 
 import requests
 import jwt
 import logging
 import json
+
+
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 def send_email(email_to: str, subject: str, template: str, variables={}):
@@ -17,15 +26,18 @@ def send_email(email_to: str, subject: str, template: str, variables={}):
     result = requests.post(
         f"https://api.eu.mailgun.net/v3/{domain_name}/messages",
         auth=("api", config['MAIL']['API_KEY']),
-        data={"from": f"{project_name} - No Reply <noreply@{domain_name}>",
-                "to": [email_to],
-                "subject": subject,
-                "template": template,
-                "h:X-Mailgun-Variables": json.dumps(variables) })
+        data={
+            "from": f"{project_name} - No Reply <noreply@{domain_name}>",
+            "to": [email_to],
+            "subject": subject,
+            "template": template,
+            "h:X-Mailgun-Variables": json.dumps(variables)
+        }
+    )
 
     if result.ok:
         logging.info(f"Email successfully sent")
-    else: 
+    else:
         logging.error(f"Problem with sending email. Reason: {result.text} ")
 
 
@@ -35,6 +47,7 @@ def send_test_email(email_to: str):
         "application": config['APP']['TITLE']
     }
     send_email(email_to=email_to, subject=subject, template="test_email", variables=variables)
+
 
 def send_reset_password_email(email_to: str, username: str, token: str):
 
@@ -74,6 +87,7 @@ def generate_password_reset_token(username):
         algorithm=config['JWT']['ALGORITHM']
     )
     return encoded_jwt
+
 
 def verify_password_reset_token(token) -> Optional[str]:
     try:
