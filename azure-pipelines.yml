@@ -23,6 +23,7 @@ steps:
     organization: 'fffdsi'
     scannerMode: 'CLI'
     configMode: 'file'
+    configFile: 'backend/sonar-project.properties'
 - task: SonarCloudAnalyze@1
 - task: SonarCloudPublish@1
   inputs:
