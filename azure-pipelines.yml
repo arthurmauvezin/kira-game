@@ -11,6 +11,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
@@ -18,6 +19,16 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.8'
+
+- script: |
+    pip freeze
+    pip install bandit
+  displayName: 'Install bandit'
+
 - task: SonarCloudPrepare@1
   inputs:
     SonarCloud: 'sonarcloud_fffdsi'
