@@ -12,14 +12,6 @@ pool:
 
 steps:
 
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '3.8'
@@ -29,11 +21,6 @@ steps:
     bandit -r . -f json -o bandit-result.json | echo 'true'
   displayName: 'Run bandit analysis'
 
-- script: |
-    ls
-    cat bandit-result.json
-  displayName: 'Verify bandit analysis'
-
 - task: SonarCloudPrepare@1
   inputs:
     SonarCloud: 'sonarcloud_fffdsi'
@@ -41,7 +28,9 @@ steps:
     scannerMode: 'CLI'
     configMode: 'file'
     configFile: 'backend/sonar-project.properties'
+
 - task: SonarCloudAnalyze@1
+
 - task: SonarCloudPublish@1
   inputs:
     pollingTimeoutSec: '300'
