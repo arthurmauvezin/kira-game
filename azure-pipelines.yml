@@ -26,8 +26,13 @@ steps:
 
 - script: |
     pip install bandit
-    bandit -r . -f json -o bandit-result.json
+    bandit -r . -f json -o bandit-result.json | echo 'true'
   displayName: 'Run bandit analysis'
+
+- script: |
+    ls
+    cat bandit-result.json
+  displayName: 'Verify bandit analysis'
 
 #- task: SonarCloudPrepare@1
 #  inputs:
